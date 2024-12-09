@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'podcast.dart';
 import 'episodes_page.dart';
-import 'animated_add_podcast_button.dart'; // Import the new button
+import 'animated_add_podcast_button.dart';
+import 'podcast_storage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,18 +32,27 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Podcast> _podcasts = [
-    Podcast(
-      name: 'My Podcast',
-      feed: 'https://www.website.com/podcast.rss',
-      imageUrl: 'https://www.website.com/image.jpg',
-    ),
-  ];
+  final List<Podcast> _podcasts = [];
 
-  void _addPodcast(Podcast podcast) {
+  @override
+  void initState() {
+    super.initState();
+    _loadPodcasts();
+  }
+
+  Future<void> _loadPodcasts() async {
+    final loadedPodcasts = await PodcastStorage.loadPodcasts();
+    setState(() {
+      _podcasts.clear();
+      _podcasts.addAll(loadedPodcasts);
+    });
+  }
+
+  Future<void> _addPodcast(Podcast podcast) async {
     setState(() {
       _podcasts.add(podcast);
     });
+    await PodcastStorage.savePodcasts(_podcasts);
   }
 
   @override
@@ -51,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text('My Podcast Home'),
         actions: [
-          AnimatedAddPodcastButton(onPodcastAdded: _addPodcast), // Use the new animated button
+          AnimatedAddPodcastButton(onPodcastAdded: _addPodcast),
         ],
       ),
       body: _podcasts.isEmpty
