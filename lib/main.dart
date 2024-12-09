@@ -66,36 +66,69 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: _podcasts.isEmpty
           ? const Center(child: Text('No podcasts yet, add one!'))
-          : ListView.builder(
+          : GridView.builder(
+              padding: const EdgeInsets.all(8.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 8,
+                childAspectRatio: 0.9,
+                crossAxisSpacing: 2,
+                mainAxisSpacing: 2,
+              ),
               itemCount: _podcasts.length,
               itemBuilder: (context, index) {
                 final podcast = _podcasts[index];
-                return Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: ListTile(
-                    leading: podcast.imageUrl.isNotEmpty
-                        ? Image.network(
-                            podcast.imageUrl,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              print("Image loading failed: $error");
-                              return const Icon(Icons.podcasts);
-                            },
-                          )
-                        : const Icon(Icons.podcasts),
-                    title: Text(podcast.name),
-                    subtitle: Text(podcast.feed),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EpisodesPage(podcast: podcast),
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EpisodesPage(podcast: podcast),
+                      ),
+                    );
+                  },
+                  child: Card(
+                    elevation: 0.5,
+                    margin: const EdgeInsets.all(1),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: podcast.imageUrl.isNotEmpty
+                              ? Image.network(
+                                  podcast.imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    print("Image loading failed: $error");
+                                    return const Icon(
+                                      Icons.podcasts,
+                                      size: 64,
+                                    );
+                                  },
+                                )
+                              : const Icon(
+                                  Icons.podcasts,
+                                  size: 64,
+                                ),
                         ),
-                      );
-                    },
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                            padding: const EdgeInsets.all(1.0),
+                            child: Text(
+                              podcast.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 8,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
