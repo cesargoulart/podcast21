@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'podcast.dart';
 import 'rss_parser.dart';
-import 'checkable_episode_item.dart';
+import 'completed_episode_item.dart';
+import 'completion_toggle_button.dart';
+import 'episode_completion_storage.dart';
 
 class EpisodesPage extends StatefulWidget {
   final Podcast podcast;
@@ -14,12 +16,24 @@ class EpisodesPage extends StatefulWidget {
 }
 
 class _EpisodesPageState extends State<EpisodesPage> {
-  Map<String, bool> checkedEpisodes = {};
+  Set<String> completedEpisodes = {};
+  bool showCompleted = true;
 
-  void _onEpisodeChecked(String episodeTitle, bool isChecked) {
+  @override
+  void initState() {
+    super.initState();
+    _loadCompletedEpisodes();
+  }
+
+  Future<void> _loadCompletedEpisodes() async {
+    final completed = await EpisodeCompletionStorage.loadCompletedEpisodes();
     setState(() {
-      checkedEpisodes[episodeTitle] = isChecked;
+      completedEpisodes = completed;
     });
+  }
+
+  String _generateEpisodeId(String title, String podcastName) {
+    return '$podcastName-$title';
   }
 
   @override
@@ -27,6 +41,16 @@ class _EpisodesPageState extends State<EpisodesPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.podcast.name),
+        actions: [
+          CompletionToggleButton(
+            showCompleted: showCompleted,
+            onToggle: (show) {
+              setState(() {
+                showCompleted = show;
+              });
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<List<Map<String, String>>>(
         future: RssParser.fetchEpisodes(widget.podcast.feed),
@@ -40,17 +64,36 @@ class _EpisodesPageState extends State<EpisodesPage> {
           }
 
           final episodes = snapshot.data!;
+          final filteredEpisodes = episodes.where((episode) {
+            final episodeId = _generateEpisodeId(
+              episode['title'] ?? '',
+              widget.podcast.name,
+            );
+            final isCompleted = completedEpisodes.contains(episodeId);
+            return showCompleted || !isCompleted;
+          }).toList();
+
           return ListView.builder(
-            itemCount: episodes.length,
+            itemCount: filteredEpisodes.length,
             itemBuilder: (context, index) {
-              final episode = episodes[index];
+              final episode = filteredEpisodes[index];
               final episodeTitle = episode['title'] ?? 'Untitled Episode';
               final episodeUrl = episode['url'] ?? '';
+              final episodeId = _generateEpisodeId(
+                episodeTitle,
+                widget.podcast.name,
+              );
 
-              return CheckableEpisodeItem(
-                title: episodeTitle,
-                url: episodeUrl,
-                onCheckChanged: (isChecked) => _onEpisodeChecked(episodeTitle, isChecked),
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                color: Colors.blue.shade50,
+                child: CompletedEpisodeItem(
+                  title: episodeTitle,
+                  url: episodeUrl,
+                  episodeId: episodeId,
+                  isCompleted: completedEpisodes.contains(episodeId),
+                  onCompletionChanged: _loadCompletedEpisodes,
+                ),
               );
             },
           );

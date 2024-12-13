@@ -38,6 +38,7 @@ class RecentEpisodesPage extends StatelessWidget {
               final episode = episodes[index];
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                color: Colors.blue.shade50, // Light blue background
                 child: CheckableEpisodeItem(
                   title: episode.title,
                   subtitle: '${episode.podcastName} - ${episode.pubDate}',
