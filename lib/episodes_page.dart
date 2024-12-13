@@ -17,7 +17,7 @@ class EpisodesPage extends StatefulWidget {
 
 class _EpisodesPageState extends State<EpisodesPage> {
   Set<String> completedEpisodes = {};
-  bool showCompleted = true;
+  bool showCompleted = false;
 
   @override
   void initState() {

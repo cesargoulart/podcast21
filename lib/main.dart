@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'My Podcast App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -69,12 +70,12 @@ class _MyHomePageState extends State<MyHomePage> {
       body: _podcasts.isEmpty
           ? const Center(child: Text('No podcasts yet, add one!'))
           : GridView.builder(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(4.0),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 8,
+                crossAxisCount: 3,
                 childAspectRatio: 0.9,
-                crossAxisSpacing: 2,
-                mainAxisSpacing: 2,
+                crossAxisSpacing: 4,
+                mainAxisSpacing: 4,
               ),
               itemCount: _podcasts.length,
               itemBuilder: (context, index) {
@@ -89,8 +90,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     );
                   },
                   child: Card(
-                    elevation: 0.5,
-                    margin: const EdgeInsets.all(1),
+                    elevation: 1,
+                    margin: const EdgeInsets.all(2),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -104,24 +105,24 @@ class _MyHomePageState extends State<MyHomePage> {
                                     print("Image loading failed: $error");
                                     return const Icon(
                                       Icons.podcasts,
-                                      size: 64,
+                                      size: 32,
                                     );
                                   },
                                 )
                               : const Icon(
                                   Icons.podcasts,
-                                  size: 64,
+                                  size: 32,
                                 ),
                         ),
                         Expanded(
                           flex: 1,
                           child: Container(
-                            padding: const EdgeInsets.all(1.0),
+                            padding: const EdgeInsets.all(4.0),
                             child: Text(
                               podcast.name,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 8,
+                                fontSize: 10,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
