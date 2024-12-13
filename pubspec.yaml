@@ -15,6 +15,7 @@ dependencies:
   just_audio: ^0.9.36
   collection: ^1.18.0
   just_audio_windows: ^0.2.2
+  intl: ^0.17.0
   # cupertino_icons: ^1.0.8 # Or latest version
 
 dev_dependencies:

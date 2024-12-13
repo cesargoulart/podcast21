@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:podcast/recent_episodes_page.dart';
 import 'podcast.dart';
 import 'episodes_page.dart';
 import 'animated_add_podcast_button.dart';
@@ -61,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text('My Podcast Home'),
         actions: [
+          RecentEpisodesButton(podcasts: _podcasts),
           AnimatedAddPodcastButton(onPodcastAdded: _addPodcast),
         ],
       ),

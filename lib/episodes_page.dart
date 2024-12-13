@@ -1,7 +1,8 @@
+// episodes_page.dart
 import 'package:flutter/material.dart';
 import 'podcast.dart';
 import 'rss_parser.dart';
-import 'episode_player.dart'; // Import the new player
+import 'checkable_episode_item.dart';
 
 class EpisodesPage extends StatefulWidget {
   final Podcast podcast;
@@ -13,6 +14,13 @@ class EpisodesPage extends StatefulWidget {
 }
 
 class _EpisodesPageState extends State<EpisodesPage> {
+  Map<String, bool> checkedEpisodes = {};
+
+  void _onEpisodeChecked(String episodeTitle, bool isChecked) {
+    setState(() {
+      checkedEpisodes[episodeTitle] = isChecked;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,14 +44,13 @@ class _EpisodesPageState extends State<EpisodesPage> {
             itemCount: episodes.length,
             itemBuilder: (context, index) {
               final episode = episodes[index];
-              final episodeTitle = episode['title'];
-              final episodeUrl = episode['url'];
+              final episodeTitle = episode['title'] ?? 'Untitled Episode';
+              final episodeUrl = episode['url'] ?? '';
 
-              return ListTile(
-                title: Text(episodeTitle ?? 'Untitled Episode'),
-                trailing: episodeUrl != null && episodeUrl.isNotEmpty
-                    ? EpisodePlayer(episodeUrl: episodeUrl)
-                    : null,
+              return CheckableEpisodeItem(
+                title: episodeTitle,
+                url: episodeUrl,
+                onCheckChanged: (isChecked) => _onEpisodeChecked(episodeTitle, isChecked),
               );
             },
           );
