@@ -1,4 +1,3 @@
-// recent_episodes_page.dart
 import 'package:flutter/material.dart';
 import 'package:podcast/checkable_episode_item.dart';
 import 'package:xml/xml.dart' as xml;
@@ -6,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'episode_player.dart';
 import 'podcast.dart';
+import 'episode_completion_storage.dart';
 
 class RecentEpisodesPage extends StatelessWidget {
   final List<Podcast> podcasts;
@@ -70,9 +70,14 @@ class EpisodeInfo {
   });
 }
 
+String _generateEpisodeId(String title, String podcastName) {
+  return '$podcastName-$title';
+}
+
 Future<List<EpisodeInfo>> _fetchRecentEpisodes(List<Podcast> podcasts) async {
   final fiveDaysAgo = DateTime.now().subtract(const Duration(days: 5));
   final allEpisodes = <EpisodeInfo>[];
+  final completedEpisodes = await EpisodeCompletionStorage.loadCompletedEpisodes();
 
   for (final podcast in podcasts) {
     try {
@@ -100,13 +105,17 @@ Future<List<EpisodeInfo>> _fetchRecentEpisodes(List<Podcast> podcasts) async {
             final title = item.findElements('title').firstOrNull?.text ?? 'Untitled';
             final enclosure = item.findElements('enclosure').firstOrNull;
             final url = enclosure?.getAttribute('url') ?? '';
+            final episodeId = _generateEpisodeId(title, podcast.name);
 
-            allEpisodes.add(EpisodeInfo(
-              title: title,
-              url: url,
-              pubDate: pubDate,
-              podcastName: podcast.name,
-            ));
+
+            if (!completedEpisodes.contains(episodeId)) {
+              allEpisodes.add(EpisodeInfo(
+                title: title,
+                url: url,
+                pubDate: pubDate,
+                podcastName: podcast.name,
+              ));
+            }
           }
         }
       }
