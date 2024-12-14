@@ -1,19 +1,24 @@
 // checkable_episode_item.dart
 import 'package:flutter/material.dart';
 import 'episode_player.dart';
+import 'episode_completion_storage.dart';
 
 class CheckableEpisodeItem extends StatefulWidget {
   final String title;
   final String? url;
   final String? subtitle;
-  final Function(bool)? onCheckChanged;
+  final String episodeId;
+  final bool isCompleted;
+  final Function() onCompletionChanged;
 
   const CheckableEpisodeItem({
     Key? key,
     required this.title,
     this.url,
     this.subtitle,
-    this.onCheckChanged,
+    required this.episodeId,
+    required this.isCompleted,
+    required this.onCompletionChanged,
   }) : super(key: key);
 
   @override
@@ -21,20 +26,19 @@ class CheckableEpisodeItem extends StatefulWidget {
 }
 
 class _CheckableEpisodeItemState extends State<CheckableEpisodeItem> {
-  bool isChecked = false;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Checkbox(
-        value: isChecked,
-        onChanged: (bool? value) {
-          setState(() {
-            isChecked = value ?? false;
-          });
-          if (widget.onCheckChanged != null) {
-            widget.onCheckChanged!(isChecked);
+        value: widget.isCompleted,
+        onChanged: (bool? value) async {
+          if (value ?? false) {
+            await EpisodeCompletionStorage.markEpisodeAsCompleted(widget.episodeId);
+          } else {
+            await EpisodeCompletionStorage.markEpisodeAsUncompleted(widget.episodeId);
           }
+          widget.onCompletionChanged();
         },
       ),
       title: Text(widget.title),

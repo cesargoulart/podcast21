@@ -7,10 +7,30 @@ import 'episode_player.dart';
 import 'podcast.dart';
 import 'episode_completion_storage.dart';
 
-class RecentEpisodesPage extends StatelessWidget {
+class RecentEpisodesPage extends StatefulWidget {
   final List<Podcast> podcasts;
 
   const RecentEpisodesPage({Key? key, required this.podcasts}) : super(key: key);
+
+  @override
+  State<RecentEpisodesPage> createState() => _RecentEpisodesPageState();
+}
+
+class _RecentEpisodesPageState extends State<RecentEpisodesPage> {
+  Set<String> completedEpisodes = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCompletedEpisodes();
+  }
+
+  Future<void> _loadCompletedEpisodes() async {
+    final completed = await EpisodeCompletionStorage.loadCompletedEpisodes();
+    setState(() {
+      completedEpisodes = completed;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +39,7 @@ class RecentEpisodesPage extends StatelessWidget {
         title: const Text('Recent Episodes'),
       ),
       body: FutureBuilder<List<EpisodeInfo>>(
-        future: _fetchRecentEpisodes(podcasts),
+        future: _fetchRecentEpisodes(widget.podcasts),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -36,18 +56,21 @@ class RecentEpisodesPage extends StatelessWidget {
             itemCount: episodes.length,
             itemBuilder: (context, index) {
               final episode = episodes[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                color: Colors.blue.shade50, // Light blue background
-                child: CheckableEpisodeItem(
-                  title: episode.title,
-                  subtitle: '${episode.podcastName} - ${episode.pubDate}',
-                  url: episode.url,
-                  onCheckChanged: (isChecked) {
-                    // Handle checkbox state change if needed
-                  },
-                ),
-              );
+                final episodeId = _generateEpisodeId(episode.title, episode.podcastName);
+                final isCompleted = completedEpisodes.contains(episodeId);
+                
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  color: Colors.blue.shade50, // Light blue background
+                  child: CheckableEpisodeItem(
+                    title: episode.title,
+                    subtitle: '${episode.podcastName} - ${episode.pubDate}',
+                    url: episode.url,
+                    episodeId: episodeId,
+                    isCompleted: isCompleted,
+                    onCompletionChanged: _loadCompletedEpisodes,
+                  ),
+                );
             },
           );
         },
@@ -108,14 +131,12 @@ Future<List<EpisodeInfo>> _fetchRecentEpisodes(List<Podcast> podcasts) async {
             final episodeId = _generateEpisodeId(title, podcast.name);
 
 
-            if (!completedEpisodes.contains(episodeId)) {
-              allEpisodes.add(EpisodeInfo(
-                title: title,
-                url: url,
-                pubDate: pubDate,
-                podcastName: podcast.name,
-              ));
-            }
+            allEpisodes.add(EpisodeInfo(
+              title: title,
+              url: url,
+              pubDate: pubDate,
+              podcastName: podcast.name,
+            ));
           }
         }
       }
